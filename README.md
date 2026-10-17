@@ -6,7 +6,7 @@
 
 ---
 
-## 🎯 Roadmap Overview
+## Roadmap Overview
 
 - **Phase 1: Fundamentals (Weeks 1–3)**
   - `std::thread`, `std::mutex`, `std::condition_variable`, `std::future` / promises
@@ -30,7 +30,7 @@
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```text
 ├── notes/                 # Concepts, assembly breakdowns, interview questions
