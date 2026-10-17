@@ -1,0 +1,24 @@
+# Build directories and binaries
+build/
+bin/
+*.o
+*.so
+*.a
+*.out
+*.exe
+
+# Debug / Tool files
+*.dSYM/
+perf.data*
+*.log
+vgcore.*
+
+# IDE / Editor
+.vscode/
+.idea/
+.cache/
+*.swp
+*.swo
+
+# Temporary scratch
+scratch/
