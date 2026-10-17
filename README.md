@@ -1,7 +1,6 @@
 # C++ Concurrency & Low-Latency Journey for Quant Dev
 
 **Author:** [RAJ-A58](https://github.com/RAJ-A58)  
-**Target:** Low-Latency / HFT / Trading Systems C++ Engineer  
 **Started:** October 2026  
 
 ---
