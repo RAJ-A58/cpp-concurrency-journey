@@ -22,3 +22,6 @@ vgcore.*
 
 # Temporary scratch
 scratch/
+
+# Local personal planning
+LINKEDIN_PLAN.md
