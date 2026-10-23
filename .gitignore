@@ -6,6 +6,8 @@ bin/
 *.a
 *.out
 *.exe
+phase1-fundamentals/src/thread_program
+
 
 # Debug / Tool files
 *.dSYM/
