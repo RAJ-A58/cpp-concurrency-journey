@@ -6,7 +6,10 @@ bin/
 *.a
 *.out
 *.exe
+# Compiled binaries in src
 phase1-fundamentals/src/thread_program
+phase1-fundamentals/src/thread_basic
+phase1-fundamentals/src/jthread_basics
 
 
 # Debug / Tool files

@@ -1,70 +1,50 @@
-#include <chrono>
-#include <iostream>
-#include <stop_token>
-#include <string>
-#include <thread>
-#include <vector>
+#include<chrono>
+#include<thread>
+#include<stop_token>
+#include<iostream>
 
-void worker_with_stop_token(std::stop_token st, int id) {
-    std::cout << "[Worker " << id << "] Started on thread ID: " 
-              << std::this_thread::get_id() << '\n';
+using namespace std;
 
-    int counter = 0;
-    // Check stop_requested() periodically (cooperative interruption)
-    while (!st.stop_requested()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        ++counter;
-    }
-
-    std::cout << "[Worker " << id << "] Stop requested after " 
-              << counter << " iterations. Cleaning up and exiting cleanly.\n";
+void simple_worker(){
+    cout << "[Worker] Starting work (sleeping for 100ms)...\n";
+    this_thread::sleep_for(100ms);
+    cout << "[Worker] Finished work!\n";
 }
 
-int main() {
-    std::cout << "=====================================================\n";
-    std::cout << "  Topic 1.1: Thread Lifecycle & C++20 std::jthread\n";
-    std::cout << "=====================================================\n\n";
-
-    // 1. Hardware Concurrency
-    unsigned int cores = std::thread::hardware_concurrency();
-    std::cout << "[Hardware] Logical cores reported by OS: " << cores << "\n\n";
-
-    // 2. The Power of C++20 std::jthread
-    // Unlike std::thread, std::jthread:
-    //  a) Automatically requests stop and joins in its destructor (RAII)
-    //  b) Can pass a std::stop_token directly to the thread function
-    std::cout << "--- 1. Launching std::jthread with cooperative stop token ---\n";
-    {
-        // Spawning 3 jthreads inside a scoped block
-        std::vector<std::jthread> workers;
-        workers.reserve(3);
-
-        for (int i = 1; i <= 3; ++i) {
-            workers.emplace_back(worker_with_stop_token, i);
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(180));
-        std::cout << "\n[Main] Exiting scoped block now (destructors will fire)...\n";
-        // Destructors of workers are called here:
-        // Automatically: request_stop() -> join()
+void stoppable_worker(std::stop_token st, int id) {
+    cout << "[Worker " << id << "] Started.\n";
+    int count = 0;
+    while (!st.stop_requested()) {
+        this_thread::sleep_for(50ms);
+        ++count;
     }
-    std::cout << "[Main] All workers joined safely without manual join() calls!\n\n";
+    cout << "[Worker " << id << "] Stop received after " << count << " iterations. Exiting cleanly.\n";
+}
 
-    // 3. Explicit Stop Request
-    std::cout << "--- 2. Explicit request_stop() Demo ---\n";
+int main(){
+    cout << "[Main] Entering inner scope block {\n";
+    
     {
-        std::jthread explicit_worker(worker_with_stop_token, 99);
-        std::this_thread::sleep_for(std::chrono::milliseconds(120));
-        
-        std::cout << "[Main] Requesting stop explicitly...\n";
-        explicit_worker.request_stop();
+        std::jthread t1(simple_worker);
+        cout << "[Main] Reached end of block. ~jthread() is about to run...\n";
+        // No t1.join() called!
+    } // <-- t1 goes out of scope here. Its destructor automatically calls t1.join(),
+      // blocking main() right at this closing brace until simple_worker() finishes.
 
-        // Check if stop was requested
-        if (explicit_worker.get_stop_token().stop_requested()) {
-            std::cout << "[Main] Verified: stop_requested is true.\n";
-        }
-    }
+    cout << "[Main] Exited block }. This prints ONLY after t1 has completely finished!\n";
 
-    std::cout << "\n--- Demo Completed Successfully ---\n";
+    // 2. Auto-injected std::stop_token (Cooperative Interruption)
+    // If the worker accepts std::stop_token as the first argument, jthread automatically
+    // injects it. When jthread destructs, it calls request_stop() before join().
+    {
+        cout << "\n--- Pattern 2: Auto-injected stop_token ---\n";
+        jthread t2(stoppable_worker, 42); // pass 42, but NOT the stop_token
+
+        this_thread::sleep_for(160ms);    // let worker loop a few times
+        cout << "[Main] Exiting block for t2 now...\n";
+    } // ~jthread(): calls request_stop() -> calls join()
+
+    cout << "[Main] t2 stopped and joined cleanly.\n";
+
     return 0;
 }
